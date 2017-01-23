@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">UserInteraction</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+<!--
+    <string name="button_a_txt">A</string>
+    <string name="button_b_txt">B</string>
+    -->
+    <string name="button_left_txt">C</string>
+    <string name="button_right_txt">D</string>
+    <string name="button_go_txt">E</string>
+
+</resources>
