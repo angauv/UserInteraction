@@ -9,43 +9,40 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.server.userinteraction.MainActivity">
-<!--
-    <Button android:id="@+id/button_a"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_a_txt"
-        android:layout_alignParentLeft="true" />
-    <Button android:id="@+id/button_b"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_b_txt"
-        android:layout_toRightOf="@+id/button_a" />
--->
+
     <Button android:id="@+id/button_left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/button_left_txt"
+        android:onClick="leftClick"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:onClick="leftClick" />
-    <Button android:id="@+id/button_right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_right_txt"
-        android:layout_toRightOf="@+id/button_left"
-        android:onClick="rightClick" />
+        android:layout_alignParentStart="true" />
+
     <Button android:id="@+id/button_go"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/button_go_txt"
-        android:layout_toRightOf="@+id/button_right"
-        android:onClick="goClick" />
+        android:onClick="goClick"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <ImageView
         android:id="@+id/imageView1"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_below="@+id/button_b"
-        android:contentDescription="@string/hello_world" />
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:contentDescription="@string/hello_world"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
+    <Button android:id="@+id/button_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_right_txt"
+        android:onClick="rightClick"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/button_left"
+        android:layout_toEndOf="@+id/button_left" />
 
 </RelativeLayout>
