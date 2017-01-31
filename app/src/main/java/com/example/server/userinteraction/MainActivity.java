@@ -82,34 +82,26 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         Intent intent = new Intent(this, Main2Activity.class);
         Bundle extras = new Bundle();
         extras.putIntArray("imageArray",imageSelect);
-        extras.putInt("image_id",nextImage);
+        extras.putInt("nextImage",nextImage);
         extras.putInt("imageStart",0);
         extras.putInt("imageEnd",3);
         intent.putExtras(extras);
-        //intent.putExtra("image_id", imageID);
         startActivityForResult(intent,1);
     }
 
+    // Resume the scrolling of images where activity B left off in Activty A
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == 1){
-            imageID = data.getIntExtra("image_id",0);
+            imageID = data.getIntExtra("imageID",0);
             image.setImageResource(imageID);
         }
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.button_left:
-                image.setImageResource(R.drawable.a);
-                imageID = R.drawable.a;
-                break;
-            case R.id.button_right:
-                image.setImageResource(R.drawable.b);
-                break;
-        }
+
     }
 }

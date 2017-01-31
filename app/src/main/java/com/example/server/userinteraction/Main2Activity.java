@@ -30,8 +30,6 @@ import android.view.GestureDetector.OnGestureListener;
         private GestureDetector gestureDetector;
         View.OnTouchListener gestureListener;
         private TextView myTextView;
-        private static int clickCount = 1;
-        private int imageGet = 0;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +37,7 @@ import android.view.GestureDetector.OnGestureListener;
             setContentView(R.layout.activity_main2);
             Intent intent = getIntent();
             Bundle extras = intent.getExtras();
-            int nextImage = extras.getInt("image_id", 0);
+            int nextImage = extras.getInt("nextImage", 0);
             int imageSelect[] = extras.getIntArray("imageArray");
            // int imageID = intent.getIntExtra("image_id",0);
             ImageView image = (ImageView) findViewById(R.id.imageView1);
@@ -60,11 +58,12 @@ import android.view.GestureDetector.OnGestureListener;
         class MyGestureDetector extends SimpleOnGestureListener {
             Intent intent = getIntent();
             Bundle extras = intent.getExtras();
-            int nextImage = extras.getInt("image_id", 0);
+            int nextImage = extras.getInt("nextImage", 0);
             int imageSelect[] = extras.getIntArray("imageArray");
             int imageStart = extras.getInt("imageStart",0);
             int imageEnd = extras.getInt("imageEnd",0);
             ImageView image = (ImageView) findViewById(R.id.imageView1);
+
             @Override
             public boolean onFling(MotionEvent me1, MotionEvent me2, float vX, float vY) {
                 try {
@@ -77,27 +76,27 @@ import android.view.GestureDetector.OnGestureListener;
                     if(Math.abs(me1.getX()-me2.getX()) > SWIPE_MAX_OFF_PATH)
                         return false;
 
-                    // swipe left
+                    // swipe left and set next image in array/gallery
                     if (me1.getX()-me2.getX() > SWIPE_MIN_DISTANCE){
                         Toast.makeText(Main2Activity.this, "left", Toast.LENGTH_SHORT).show();
 
                         if (nextImage == imageStart)
                             nextImage = imageEnd;
                         else
-                            nextImage = nextImage -1;
-                        imageGet = imageSelect[nextImage];
-                        image.setImageResource(imageGet);
+                            nextImage--;
+
+                        image.setImageResource(imageSelect[nextImage]);
                 }
-                    // swipe right
+                    // swipe right and set next image in array/gallery
                     else if(me2.getX()-me1.getX() > SWIPE_MIN_DISTANCE){
                         Toast.makeText(Main2Activity.this, "right", Toast.LENGTH_SHORT).show();
 
                         if (nextImage == imageEnd)
                             nextImage = imageStart;
                         else
-                            nextImage = nextImage + 1;
-                        imageGet = imageSelect[nextImage];
-                        image.setImageResource(imageGet);
+                            nextImage++;
+
+                        image.setImageResource(imageSelect[nextImage]);
                     }
 
                 } catch (Exception e) {
@@ -106,10 +105,12 @@ import android.view.GestureDetector.OnGestureListener;
                 return false;
             }
 
+            // Return to Activity A when user double taps screen and set current image in Activity B
+            // to Activity A imageview.
             @Override
             public boolean onDoubleTap(MotionEvent e){
                 Intent intent = new Intent();
-                intent.putExtra("image_id", imageGet);
+                intent.putExtra("imageID", imageSelect[nextImage]);
                 setResult(1,intent);
                 finish();
                 return true;
@@ -117,14 +118,6 @@ import android.view.GestureDetector.OnGestureListener;
         }
 
         @Override
-        public void onClick(View v) {
-          /*  if (clickCount ==2) {
-                Intent intent = new Intent();
-                intent.putExtra("image_id", 0);
-                finish();
-                clickCount = 1;
-            }
-            else
-                clickCount++;*/
-        }
+        public void onClick(View v) {}
+
     }
