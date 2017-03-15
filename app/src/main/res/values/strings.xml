@@ -6,5 +6,6 @@
     <string name="button_left_txt">LEFT</string>
     <string name="button_right_txt">RIGHT</string>
     <string name="button_go_txt">GO</string>
+    <string name="button_photo_txt">PHOTO</string>
 
 </resources>

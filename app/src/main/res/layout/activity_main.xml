@@ -10,15 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.server.userinteraction.MainActivity">
 
-    <Button android:id="@+id/button_left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_left_txt"
-        android:onClick="leftClick"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
     <Button android:id="@+id/button_go"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,6 +26,24 @@
         android:contentDescription="@string/hello_world"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
+
+    <Button android:id="@+id/button_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_left_txt"
+        android:onClick="leftClick"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/imageView1"
+        android:layout_toLeftOf="@+id/imageView1" />
+
+    <Button android:id="@+id/button_photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_photo_txt"
+        android:onClick="photoClick"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/button_right"
+        android:layout_toEndOf="@+id/button_right" />
 
     <Button android:id="@+id/button_right"
         android:layout_width="wrap_content"
