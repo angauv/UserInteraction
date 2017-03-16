@@ -40,8 +40,9 @@ public class Main2Activity extends AppCompatActivity implements OnClickListener 
     private static final int SWIPE_MIN_DISTANCE = 100;
     private static final int SWIPE_MAX_OFF_PATH = 250;
     private static final int SWIPE_THRESHOLD_VELOCITY = 200;
-    private static final float SHAKE_MIN = (float)18.0;
-    private static final float SNAP_MIN = (float)16.0;
+    private static final float SNAP_MIN = (float)5;
+    private static final float SNAP_OK = (float)7;
+    private static final float SHAKE_OK = (float)18;
     private GestureDetector gestureDetector;
     View.OnTouchListener gestureListener;
     private TextView myTextView;
@@ -59,8 +60,18 @@ public class Main2Activity extends AppCompatActivity implements OnClickListener 
     private Sensor gyro;
 
     private String getPath;
-    private float xLast;
-    private boolean accelInit;
+    private static float xA;
+    private static float yA;
+    private static float zA;
+    private static float xG;
+    private static float yG;
+    private static float zG;
+    private float mAccel; // acceleration apart from gravity
+    private float mAccelCurrent; // current acceleration including gravity
+    private float mAccelLast; // last acceleration including gravity
+
+    private int nextImage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,20 +110,36 @@ public class Main2Activity extends AppCompatActivity implements OnClickListener 
         acceleration = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(mSensorListener, gyro, SensorManager.SENSOR_DELAY_NORMAL);
         mSensorManager.registerListener(mSensorListener, acceleration, SensorManager.SENSOR_DELAY_NORMAL);
-        accelInit = false;
+        mAccel = 0.00f;
+        mAccelCurrent = SensorManager.GRAVITY_EARTH;
+        mAccelLast = SensorManager.GRAVITY_EARTH;
 
         //gestureScanner = new GestureDetector(getBaseContext(), this);
     }
 
+    // Find file index of current image
+    public int imageIndex(String path){
+        File file = new File(path);
+        File[] files = new File(file.getParent()).listFiles();
+        String[] fileString = new File(file.getParent()).list();
+        int i;
+        int img = -1;
+
+        // Find file index of current image
+        for (i = 0; i < files.length; i++){
+            if(fileString[i].equals(file.getName())){
+                img = i;
+            }
+        }
+        return img;
+    }
+
     class MyGestureDetector extends SimpleOnGestureListener {
-        Intent intent = getIntent();
         ImageView image = (ImageView) findViewById(R.id.imageView1);
 
         File file = new File(getPath);
         Uri imgUri = Uri.fromFile(file);
         File[] files = new File(file.getParent()).listFiles();
-        String[] fileString = new File(file.getParent()).list();
-        int nextImage = Arrays.binarySearch(fileString, file.getName());
 
         @Override
         public boolean onFling(MotionEvent me1, MotionEvent me2, float vX, float vY) {
@@ -156,7 +183,7 @@ public class Main2Activity extends AppCompatActivity implements OnClickListener 
             Intent intent = new Intent();
             //intent.putExtra("imagePath", files[nextImage].getAbsolutePath());
             intent.putExtra("imagePath", getPath);
-            setResult(1, intent);
+            setResult(2, intent);
             finish();
             return true;
         }
@@ -164,20 +191,23 @@ public class Main2Activity extends AppCompatActivity implements OnClickListener 
         public void onSwipeUp(){
             Toast.makeText(Main2Activity.this, "up", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
-            intent.putExtra("imagePath", files[nextImage].getAbsolutePath());
-            setResult(1, intent);
+            intent.putExtra("imagePath", getPath);
+            setResult(2, intent);
             finish();
         }
         public void onSwipeDown(){
             Toast.makeText(Main2Activity.this, "down", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
-            intent.putExtra("imagePath", files[nextImage].getAbsolutePath());
-            setResult(1, intent);
+            intent.putExtra("imagePath", getPath);
+            setResult(2, intent);
             finish();
         }
 
         public void onSwipeLeft() {
             Toast.makeText(Main2Activity.this, "left", Toast.LENGTH_SHORT).show();
+
+            // Find file index of current image
+            nextImage = imageIndex(getPath);
 
             if (nextImage == 0)
                 nextImage = files.length - 1;
@@ -191,6 +221,9 @@ public class Main2Activity extends AppCompatActivity implements OnClickListener 
 
         public void onSwipeRight() {
             Toast.makeText(Main2Activity.this, "right", Toast.LENGTH_SHORT).show();
+
+            // Find file index of current image
+            nextImage = imageIndex(getPath);
 
             if (nextImage == (files.length - 1))
                 nextImage = 0;
@@ -217,75 +250,69 @@ public class Main2Activity extends AppCompatActivity implements OnClickListener 
         public void onAccuracyChanged(Sensor sensor, int accuracy){}
 
         private void getGyro(SensorEvent event){
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
+            ImageView image = (ImageView) findViewById(R.id.imageView1);
+            File file = new File(getPath);
+            Uri imgUri = Uri.fromFile(file);
+            File[] files = new File(file.getParent()).listFiles();
 
-            textXgyro.setText((int)x + " rad/s");
-            textYgyro.setText((int)y + " rad/s");
-            textZgyro.setText((int)z + " rad/s");
+            // Find file index of current image
+            nextImage = imageIndex(getPath);
 
-            if (Math.abs(x)+Math.abs(y)+Math.abs(z) > SHAKE_MIN){
+            xG = event.values[0];
+            yG = event.values[1];
+            zG = event.values[2];
+
+            textXgyro.setText((int)xG + " rad/s");
+            textYgyro.setText((int)yG + " rad/s");
+            textZgyro.setText((int)zG + " rad/s");
+
+            float sumG = xG + yG + zG;
+
+            if (sumG > SNAP_MIN && mAccel < SNAP_OK){
+                if (nextImage == 0)
+                    nextImage = files.length -1;
+                else
+                    nextImage--;
+
+                imgUri = Uri.fromFile(files[nextImage]);
+                image.setImageURI(imgUri);
+                getPath = files[nextImage].getAbsolutePath();
+            }
+            else if(sumG < -SNAP_MIN && mAccel < SNAP_OK){
+                if (nextImage == files.length -1)
+                    nextImage = 0;
+                else
+                    nextImage++;
+
+                imgUri = Uri.fromFile(files[nextImage]);
+                image.setImageURI(imgUri);
+                getPath = files[nextImage].getAbsolutePath();
+            }
+        }
+        private void getAccelerometer(SensorEvent event){
+            xA = event.values[0];
+            yA = event.values[1];
+            zA = event.values[2];
+
+            mAccelLast = mAccelCurrent;
+            mAccelCurrent = (float) Math.sqrt((double) (xA*xA + yA*yA + zA*zA));
+            float delta = mAccelCurrent - mAccelLast;
+            mAccel = mAccel * 0.9f + delta;
+
+            DecimalFormat dF = new DecimalFormat("#.##");
+            xA = Float.parseFloat(dF.format(xA));
+            yA = Float.parseFloat(dF.format(yA));
+            zA = Float.parseFloat(dF.format(zA));
+
+            textXaccel.setText(String.valueOf(xA) + " m/s2");
+            textYaccel.setText(String.valueOf(yA) + " m/s2");
+            textZaccel.setText(String.valueOf(zA) + " m/s2");
+
+            if (mAccel > SHAKE_OK) {
                 Intent intent = new Intent();
                 intent.putExtra("imagePath", getPath);
                 setResult(2, intent);
                 finish();
-            }
-        }
-        private void getAccelerometer(SensorEvent event){
-            ImageView image = (ImageView) findViewById(R.id.imageView1);
-            File file = new File(getPath);
-            Uri imgUri;
-            File[] files = new File(file.getParent()).listFiles();
-            String[] fileString = new File(file.getParent()).list();
-            int nextImage = Arrays.binarySearch(fileString, file.getName());
-
-            // Display default image at the beginning
-            for (int i = 0; i < files.length ; i++){
-                File testFile = files[i];
-            }
-
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
-
-            DecimalFormat dF = new DecimalFormat("#.##");
-            x = Float.parseFloat(dF.format(x));
-            y = Float.parseFloat(dF.format(y));
-            z = Float.parseFloat(dF.format(z));
-
-            textXaccel.setText(String.valueOf(x) + " m/s2");
-            textYaccel.setText(String.valueOf(y) + " m/s2");
-            textZaccel.setText(String.valueOf(z) + " m/s2");
-
-            if(!accelInit) {
-                xLast = x;
-                accelInit = true;
-            }
-            else {
-                float deltaX = xLast - x;
-                xLast = x;
-
-                if (deltaX < -SNAP_MIN) {
-                    if (nextImage == 0)
-                        nextImage = files.length -1;
-                    else
-                        nextImage--;
-
-                    imgUri = Uri.fromFile(files[nextImage]);
-                    image.setImageURI(imgUri);
-                    getPath = files[nextImage].getAbsolutePath();
-                }
-                else if (deltaX > SNAP_MIN) {
-                    if (nextImage == files.length -1)
-                        nextImage = 0;
-                    else
-                        nextImage++;
-
-                    imgUri = Uri.fromFile(files[nextImage]);
-                    image.setImageURI(imgUri);
-                    getPath = files[nextImage].getAbsolutePath();
-                }
             }
         }
 
